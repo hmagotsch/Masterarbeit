@@ -1,0 +1,55 @@
+import tensorflow as tf
+from tensorflow import keras
+import numpy as np
+from tensorflow.keras.utils import to_categorical
+
+#CIFAR10 laden
+(x_train, y_train), (x_test, y_test)= keras.datasets.cifar10.load_data()
+
+class_labels= ["airplane", "automobile", "bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck"]
+
+#normalisieren der Bilder
+#x_train, x_test= x_train/255.0, x_test/255.0
+
+y_train= to_categorical(y_train, num_classes=10)
+y_test=to_categorical(y_test,num_classes=10)
+
+model= keras.models.load_model('/content/cifar10_resnet34.h5')
+
+test_loss, test_accuracy= model.evaluate(x_test, y_test)
+print(f'Testgenauigkeit: {test_accuracy:.4f}')
+
+#Vorhersage treffen
+prediction= model.predict(x_test)
+class_pred= np.argmax(prediction, axis=1)
+#classes_true= y_test.flatten()
+true_class=np.argmax(y_test, axis=1)
+
+#falsche Klassifizierung
+index_false= np.where(class_pred != true_class)[0]
+print(f'Anzahl falsch klassifizierter Bilder: {len(index_false)}')
+print(f'Indizes der falsch klassifizierten Bilder: {index_false.tolist()}')
+#anz_false= len(index_false)
+
+#richtige Klassifizierung
+index_true= np.where(class_pred == true_class)[0]
+
+#Index nach Klassen ordnen
+anz_classes= 10
+false_per_class= {i: [] for i in range(anz_classes)}
+true_per_class= {i: [] for i in range(anz_classes)}
+
+for indx in index_false:
+  label_true=true_class[indx]
+  false_per_class[label_true].append(indx)
+
+for indx in index_true:
+  label_true= true_class[indx]
+  true_per_class[label_true].append(indx)
+
+#Ausgabe für jede Klasse
+for ite in range(anz_classes):
+  label = class_labels[ite]
+  print(f"\nKlasse '{label}':")
+  print(f"Richtig klassifizierte Index: {true_per_class[ite]}")
+  print(f"Falsch klassifizierte Index:{false_per_class[ite]}")
