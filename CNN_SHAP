@@ -1,0 +1,71 @@
+import tensorflow as tf
+from tensorflow import keras
+import numpy as np
+import matplotlib.pyplot as plt
+
+#CIFAR-10 laden
+(x_train, y_train), (x_test, y_test)= keras.datasets.cifar10.load_data()
+
+#Bilder normalisieren
+x_train, x_test= x_train/255.0, x_test/255.0
+
+#one-hot Codierung
+#y_train= keras.utils.to_categorical(y_train,10)
+#y_test= keras.utils.to_categorical(y_test,10)
+
+model= keras.models.load_model('/content/cifar10_model01.h5')
+
+#Modell evaluieren
+test_loss, test_accuracy= model.evaluate(x_test, y_test)
+print(f'Testgenauigkeit: {test_accuracy:.4f}')
+
+
+####neuer Code-Abschnitt in Google-Colab####
+
+
+import shap
+import tensorflow as tf
+import time
+from tensorflow.keras.datasets import cifar10
+from skimage.segmentation import slic
+from skimage.color import rgb2lab
+
+#CIFAR10 laden
+(X_train, y_train), (X_test, y_test)= cifar10.load_data()
+X= X_test.astype(np.float32)
+y= y_test.flatten()
+
+class_names= ["airplane", "automobile", "bird","cat", "deer", "dog", "frog","horse", "ship", "truck"]
+
+def f(x):
+  #x= x.copy()
+  return model.predict(x)
+
+
+#Auswahl Bild
+image_index= 734
+selected_image= X[image_index:image_index+1]
+
+#Bild anzeigen
+plt.imshow(selected_image[0].astype(np.uint8))
+plt.title(f"Klasse: {class_names[y[image_index]]}(Index: {image_index})")
+plt.axis('off')
+#plt.show()
+
+#SHAP-Masker
+masker= shap.maskers.Image("inpaint_telea", selected_image[0].shape) #Alternativen sind bspw. 0 (für Schwarz) oder 0.5 (für Grau)
+
+#Erklärung
+explainer= shap.Explainer(f, masker, output_names=class_names)
+
+#Zeit
+start= time.time()
+
+#SHAP-Werte für ausgewähltes Bild berechnen
+shap_values= explainer(selected_image, max_evals=1000, batch_size=1000, outputs= [9])#shap.Explanation.argsort.flip[:8]) #max_evals und bath_size sind Parameter von denen die Qualität und die Effizuenz abhängen
+
+duration= time.time() - start
+print(f"Zeit für die Generierung der SHAP-Erklärung: {duration:.2f} Sekunden")
+
+#SHAP Erklärung ausgeben
+shap.image_plot(shap_values)
