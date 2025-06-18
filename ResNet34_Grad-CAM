@@ -1,0 +1,80 @@
+!pip install git+https://github.com/qubvel/classification_models.git #ResNet aus GitHUb laden
+
+
+####neuer Code-Abschnitt in Google-Colab####
+
+
+import numpy as np
+import keras
+import matplotlib.pyplot as plt
+from keras.datasets import cifar10
+from tensorflow.keras.utils import to_categorical
+from classification_models.keras import Classifiers
+ResNet34, preprocess_input= Classifiers.get('resnet34')
+import tensorflow as tf
+
+
+model= tf.keras.models.load_model('/content/cifar10_resnet34.h5')
+
+#Cifar10 laden
+(X_train, y_train), (X_test,y_test)= cifar10.load_data()
+X_train.shape, X_test.shape, np.unique(y_train).shape[0]
+#one hot codierung
+anz_classes= 10
+y_train= to_categorical(y_train, anz_classes)
+y_test= to_categorical(y_test,anz_classes)
+
+model.evaluate(X_test, y_test)
+
+
+####neuer Code-Abeschnit in Google-Colab####
+
+
+model.summary() #aus der Ausgabe kann man die Layer ablesen, die für Grad-CAM verwendet werden können
+
+
+####neuer Code-Abschnitt in Google-Colab####
+
+
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+import cv2
+import time
+
+#dummy-Vorhersage für die Initialisierung des Modells durch Tensorflow
+_= model.predict(np.expand_dims(X_test[0], axis=0))
+
+#Bild auswählen
+image= np.expand_dims(X_test[734], axis=0)
+layer_name='stage1_unit3_conv2' #Name des Convolutional Layer auf den Grad-CAM zugreifen soll stage2_unit1_conv2 stage2_unit4_conv2  4
+
+start= time.time()
+
+grad_model= keras.models.Model(
+    [model.input],
+    [model.get_layer(layer_name).output, model.output])
+
+#Gradientenberechnung mit GradientTape
+with tf.GradientTape() as tape:
+  conv_output, prediction= grad_model(image)
+  #class_index= np.argmax(prediction[0]) #für vorhergesagte KLasse
+  class_index = int(y_test[734][0]) #für tatsächliche Klasse
+  loss= prediction[:, class_index]
+
+gradient= tape.gradient(loss, conv_output) #Gradient berechnen
+pooled_gradient= tf.reduce_mean(gradient, axis=(0,1,2)) #Mittelwert der Gradienten berechen ; tf.reduce_max
+conv_output= conv_output[0] #Feature Maps extrahieren
+
+#Grad-cam berechnen unf rescaling
+cam= np.dot(conv_output, pooled_gradient)
+cam= np.maximum(cam,0)
+cam= cv2.resize(cam, (32,32))
+cam= cam/cam.max()
+
+duration= time.time()- start
+print(f"Zeit für Grad-Cam: {duration:.2f} Sekunden")
+
+class_labels= ["airplane", "automobile", "bird", "cat", "deer", "dog", "frog","horse", "ship", "truck"]
+label_pred= class_labels[class_index]
+label_true= class_labels[int(y_test[734][0])]
