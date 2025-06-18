@@ -1,0 +1,92 @@
+import tensorflow as tf
+from tensorflow import keras
+import numpy as np
+import matplotlib.pyplot as plt
+
+#CIFAR10 laden
+(x_train, y_train), (x_test, y_test)= keras.datasets.cifar10.load_data()
+
+#Bilder normalisieren
+x_train, x_test= x_train/255.0, x_test/255.0
+
+#one-hot Codierung
+#y_train= keras.utils.to_categorical(y_train,10)
+#y_test= keras.utils.to_categorical(y_test,10)
+
+model= keras.models.load_model('/content/cifar10_model01.h5')
+
+test_loss, test_accuracy= model.evaluate(x_test, y_test)
+print(f'Testgenauigkeit: {test_accuracy:.4f}')
+
+
+####neure Code-Abschnitt in Google-Colab####
+
+
+model.summary()#optional, um die Convolutional-Layer des Netzes einsehen zu können
+
+
+####neue Code-Abschnitt in Goggle-Colab####
+
+
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+import cv2
+import time
+
+#dummy-Vorhersage für die Initialisierung des Modells durch Tensorflow
+_= model.predict(np.expand_dims(x_test[0], axis=0))
+
+#Bild auswählen
+image= np.expand_dims(x_test[734], axis=0)#Index beschreibt das Bild und muss an mehreren Stellen im Code angegeben werden
+layer_name='conv2d_1' #Name des Convolutional Layer auf den Grad-CAM zugreifen soll
+
+start= time.time()
+
+grad_model= keras.models.Model(
+    [model.input],
+    [model.get_layer(layer_name).output, model.output])
+
+#Gradientenberechnung mit GradientTape
+with tf.GradientTape() as tape:
+  conv_output, prediction= grad_model(image)
+  #class_index= np.argmax(prediction[0]) #für vorhergesagte KLasse
+  class_index = y_test[734][0] #für tatsächliche Klasse
+  loss= prediction[:, class_index]
+
+gradient= tape.gradient(loss, conv_output) #Gradient berechnen
+pooled_gradient= tf.reduce_mean(gradient, axis=(0,1,2)) #Mittelwert der Gradienten berechen ; tf.reduce_max
+conv_output= conv_output[0] #Feature Maps extrahieren
+
+#Grad-cam berechnen unf rescaling
+cam= np.dot(conv_output, pooled_gradient)
+cam= np.maximum(cam,0)
+cam= cv2.resize(cam, (32,32))
+cam= cam/cam.max()
+
+duration= time.time()- start
+print(f"Zeit für Grad-Cam: {duration:.2f} Sekunden")
+
+class_labels= ["airplane", "automobile", "bird", "cat", "deer", "dog", "frog","horse", "ship", "truck"]
+label_pred= class_labels[class_index]
+label_true= class_labels[y_test[734][0]]
+
+
+#Originalbild und Grad-CAM anzeigen
+fig, ax = plt.subplots(1, 2,figsize=(4, 2))
+ax[0].imshow(x_test[734])
+ax[0].set_title(f"Originalbild (Label: {label_true})")
+ax[0].axis("off")
+
+ax[1].imshow(x_test[734])
+ax[1].imshow(cam, cmap='jet', alpha=0.5)
+ax[1].set_title(f'Grad-CAM (Predicted: {label_pred})')
+ax[1].axis('off')
+
+plt.show()
+
+#duration= time.time()- start
+#print(f"Zeit für Grad-Cam: {duration:.2f} Sekunden")
+
+confidence= np.max(prediction)
+print(f"Vorhersage: {label_pred} (Confidence: {confidence:.2f})")
