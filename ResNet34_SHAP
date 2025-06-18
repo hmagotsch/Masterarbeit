@@ -1,0 +1,91 @@
+!pip install git+https://github.com/qubvel/classification_models.git #ResNet aus GitHub laden
+
+
+####neuer Code-Abschnitt in Google-Colab####
+
+
+import numpy as np
+import keras
+import matplotlib.pyplot as plt
+from keras.datasets import cifar10
+from tensorflow.keras.utils import to_categorical
+#from keras.models import Sequential
+#from keras.layers import Dense, Conv2D, MaxPooling2D
+#from keras.layers import Dropout, Flatten, GlobalAveragePooling2D
+from classification_models.keras import Classifiers
+ResNet34, preprocess_input = Classifiers.get('resnet34')
+import tensorflow as tf
+
+#from classification_models.resnet import ResNet18, preprocess_input
+#import keras.backend as K
+#import shutil, os
+#from google.colab.patches import cv2_imshow
+#import cv2
+
+model= tf.keras.models.load_model('/content/cifar10_resnet34.h5')
+
+#CIFAR10 laden
+(X_train, y_train),(X_test, y_test)= cifar10.load_data()
+
+#normalisieren
+#X_train, X_test = X_train/255.0, X_test/255.0
+
+X_train.shape, X_test.shape, np.unique(y_train).shape[0]
+#one-hot codierung
+anz_classes= 10
+y_train= to_categorical(y_train, anz_classes)
+y_test= to_categorical(y_test, anz_classes)
+
+model.evaluate(X_test,y_test)
+
+
+####neuer Code-Abschnitt in Google-Colab####
+
+
+import shap
+import tensorflow as tf
+#from tensorflow.keras.models import load_model
+#from tensorflow.keras.datasets import cifar10
+import numpy as np
+
+import time
+
+#CIFAR10 laden
+(X_train,y_train), (X_test, y_test)= cifar10.load_data()
+X= X_test.astype(np.float32)
+y= y_test.flatten() #1D-array
+
+class_names= ["airplane", "automobile","bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck"]
+
+#preprocessing nicht notwendig, nur Modellvorhersage
+def f(x):
+  #x= x.copy()
+  #x= preprocess_input(x)
+  return model.predict(x)
+
+#Bild auswählen
+image_index= 91
+selected_image= X[image_index:image_index+1]
+
+#Bild anzeigen
+plt.imshow(selected_image[0].astype(np.uint8))
+plt.title(f"Class: {class_names[y[image_index]]} (Index: {image_index})")
+plt.axis("off")
+#plt.show()
+
+#shap maskr
+masker= shap.maskers.Image("inpaint_telea", selected_image[0].shape) #alternativen sind bspw. 0 (für Schwarz) oder 0.5 (für Grau)
+
+#explainer
+explainer= shap.Explainer(f, masker, output_names=class_names)
+
+start= time.time()
+
+#shap werte berechnen
+shap_values= explainer(selected_image, max_evals=1000, batch_size=1000, outputs=[3])# shap.Explanation.argsort.flip[:10]) #max_evals und batch_size sind wichtige Paramter, von denen Qualität und Effizienz abhängen
+
+duration= time.time()- start
+print(f"Zeit für die Generierung der SHAP-Erklärung: {duration:.2f} Sekunden")
+
+#SHAP ausgeben
+shap.image_plot(shap_values)
