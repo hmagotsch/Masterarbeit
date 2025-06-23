@@ -1,4 +1,4 @@
-Das vorliegende GitHub-Repository enthält mit zwei .h5- und acht Python-Dateien den gesamten Quellcode, um die Ergebnisse der Forschungsarbeit reproduzieren zu können. Die .h5 Dateien sind die trainierten CNNs und in den Python-Dateien werden die XAI-Techniken auf die CNNs angewandt. Der Quellcode der einzelnen Python-Dateien wurde mit Hilfe von Chat-GPT überarbeitet (Strukturierung und Fehlerbehebung). Die genaue Funktion der einzelnen Dateien wird im Folgenden kurz erläutert.
+Das vorliegende GitHub-Repository enthält mit zwei .h5- und acht Python-Dateien den gesamten Quellcode, um die Ergebnisse der Forschungsarbeit reproduzieren zu können. Die .h5 Dateien sind die trainierten CNNs und in den Python-Dateien werden die XAI-Techniken auf die CNNs angewandt. Der Quellcode der einzelnen Python-Dateien wurde mit Hilfe von Generativer KI überarbeitet (Strukturierung und Fehlerbehebung). Die genaue Funktion der einzelnen Dateien wird im Folgenden kurz erläutert.
 
 cifar10_model01.h5: Das trainierte einfache CNN, welches auf den CIFAR-10-Datensatz trainiert wurde.
 
