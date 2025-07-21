@@ -7,7 +7,10 @@ import matplotlib.pyplot as plt
 (x_train, y_train), (x_test, y_test)= keras.datasets.cifar10.load_data()
 
 #Bilder normalisieren
-x_train, x_test= x_train/255.0, x_test/255.0
+#Gleiche Vorverarbeitung wie bei ResNet
+#x_train, x_test= x_train/255.0, x_test/255.0
+
+x_train.shape, x_test.shape, np.unique(y_train).shape[0]
 
 #one-hot Codierung
 #y_train= keras.utils.to_categorical(y_train,10)
@@ -16,8 +19,8 @@ x_train, x_test= x_train/255.0, x_test/255.0
 model= keras.models.load_model('/content/cifar10_model01.h5')
 
 #Modell evaluieren
-test_loss, test_accuracy= model.evaluate(x_test, y_test)
-print(f'Testgenauigkeit: {test_accuracy:.4f}')
+#test_loss, test_accuracy= model.evaluate(x_test, y_test)
+#print(f'Testgenauigkeit: {test_accuracy:.4f}')
 
 
 ####neuer Code-Abschnitt in Google-Colab####
