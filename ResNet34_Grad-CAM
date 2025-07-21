@@ -78,3 +78,22 @@ print(f"Zeit für Grad-Cam: {duration:.2f} Sekunden")
 class_labels= ["airplane", "automobile", "bird", "cat", "deer", "dog", "frog","horse", "ship", "truck"]
 label_pred= class_labels[class_index]
 label_true= class_labels[int(y_test[734][0])]
+
+#Originalbild und Grad-CAM anzeigen
+fig, ax = plt.subplots(1, 2,figsize=(4, 2))
+ax[0].imshow(X_test[734])
+#ax[0].set_title(f"Originalbild (Label: {label_true})")
+ax[0].axis("off")
+
+ax[1].imshow(X_test[734])
+ax[1].imshow(cam, cmap='jet', alpha=0.5)
+#ax[1].set_title(f'Grad-CAM (Predicted: {label_pred})')
+ax[1].axis('off')
+
+plt.show()
+
+#duration= time.time()- start
+#print(f"Zeit für Grad-Cam: {duration:.2f} Sekunden")
+
+confidence= np.max(prediction)
+print(f"Vorhersage: {label_pred} (Confidence: {confidence:.2f})")
