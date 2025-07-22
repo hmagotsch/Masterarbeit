@@ -8,6 +8,8 @@ CNN_allgemein: Das einfache CNN wird auf den CIFAR-10-Datensatz angewandt. Dabei
 
 CNN_LIME: Auf das einfache CNN wird LIME angewandt. Es können dabei unterschiedliche Konfigurationen vorgenommen werden.
 
+CNN_model01_Generierung: Hier wird das einfache CNN generiert, trainiert und anschließend zur weiteren Verwendung gespeichert.
+
 CNN_SHAP: Auf das einfache CNN wird SHAP angewandt. Es können dabei unterschiedliche Konfigurationen vorgenommen werden.
 
 CNN_Grad-CAM: Auf das einfache CNN wird Grad-CAM angewandt. Es können dabei unterschiedliche Convolutional-Layer ausgewählt werden.
@@ -15,6 +17,8 @@ CNN_Grad-CAM: Auf das einfache CNN wird Grad-CAM angewandt. Es können dabei unt
 ResNet34_allgemein: Das ResNet34 wird auf den CIFAR-10-Datensatz angewandt. Dabei wird die Genauigkeit des Netzes insgesamt, aber auch für jede Klasse bestimmt. Außerdem wird für jede Klasse der Index der richtig und falsch klassifizierten Bilder ausgegeben.
 
 ResNet34_LIME: Auf das ResNet34 wird LIME angewandt. Es können dabei unterschiedliche Konfigurationen vorgenommen werden.
+
+ResNet_resnet34_Generierung: Hier wird das bereits trainierte ResNet34 geladen, an den CIFAR-10-Datensatz angepasst und zur weiteren Verwendung gespeichert.
 
 ResNet34_SHAP: Auf das ResNet34 wird SHAP angewandt. Es können dabei unterschiedliche Konfigurationen vorgenommen werden.
 
