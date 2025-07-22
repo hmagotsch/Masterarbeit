@@ -1,0 +1,30 @@
+from tensorflow import keras
+#import numpy as np
+#import matplotlib.pyplot as plt
+#import cv2
+
+#CIFAR-10 laden
+(x_train,y_train), (x_test, y_test)=keras.datasets.cifar10.load_data()
+x_train, x_test=x_train/255.0, x_test/255.0
+
+#Modell definieren
+inputs=keras.Input(shape=(32,32,3))#wegen 32x32 Pixel von CIFAR-10
+x= keras.layers.Conv2D(32,(3,3), activation='relu')(inputs)
+x= keras.layers.MaxPooling2D((2,2))(x)
+x= keras.layers.Conv2D(64,(3,3), activation='relu')(x)
+x= keras.layers.MaxPooling2D((2,2))(x)
+x= keras.layers.Conv2D(128,(3,3), activation='relu', name='last_conv_layer')(x)#bezeichnung für Grad-Cam um einfachach auf den letzten layer zugreifen zu könne
+x= keras.layers.Flatten()(x)
+x= keras.layers.Dense(128, activation='relu')(x)
+output= keras.layers.Dense(10, activation='softmax')(x)
+
+model= keras.Model(inputs, output)
+
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy',metrics=['accuracy'])
+model.fit(x_train,y_train, epochs=10, validation_data=(x_test, y_test))
+
+
+####Neuer Code-Abschnitt in Google Colab####
+
+
+model.save("cifar10_model01.h5")
