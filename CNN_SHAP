@@ -33,8 +33,7 @@ from tensorflow.keras.datasets import cifar10
 from skimage.segmentation import slic
 from skimage.color import rgb2lab
 
-#CIFAR10 laden
-(X_train, y_train), (X_test, y_test)= cifar10.load_data()
+
 X= X_test.astype(np.float32)
 y= y_test.flatten()
 
@@ -51,7 +50,6 @@ selected_image= X[image_index:image_index+1]
 
 #Bild anzeigen
 plt.imshow(selected_image[0].astype(np.uint8))
-plt.title(f"Klasse: {class_names[y[image_index]]}(Index: {image_index})")
 plt.axis('off')
 #plt.show()
 
