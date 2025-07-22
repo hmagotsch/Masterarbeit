@@ -1,0 +1,51 @@
+#im Folgenden wird das bereits trainierte ResNet34 geladen (https://github.com/qubvel/classification_models) und unter Zuhilfenahme von https://colab.research.google.com/github/bhgtankita/MYWORK/blob/master/Grad_CAM_RESNET18_Transfer_Learning_on_CIFAR10.ipynb an den CIFAR-10-Datensatz angepasst
+!pip install git+https://github.com/qubvel/classification_models.git
+
+###Neuer Code-Abschnitt in Google-Colab###
+
+import numpy as np
+import keras
+import matplotlib.pyplot as plt
+from keras.datasets import cifar10
+from tensorflow.keras.utils import to_categorical
+from keras.models import Sequential
+from keras.layers import Dense, Conv2D, MaxPooling2D
+from keras.layers import Dropout, Flatten, GlobalAveragePooling2D
+from classification_models.keras import Classifiers
+ResNet34, preprocess_input=Classifiers.get('resnet34')
+import keras.backend as K
+import shutil, os
+from google.colab.patches import cv2_imshow
+import cv2
+
+#CIFAR-10 laden
+(X_train, y_train),(X_test, y_test) =cifar10.load_data()
+X_train.shape, X_test.shape, np.unique(y_train).shape[0]
+#One-Hot Codierung
+n_classes = 10
+y_train =to_categorical(y_train, n_classes)
+y_test =to_categorical(y_test, n_classes)
+
+###Neuer Code-Abschnitt in Google Colab###
+
+#Modell laden und trainieren (Transfer Learning)
+n_classes=10
+base_model=ResNet34(input_shape=(32,32,3), weights='imagenet', include_top=False)
+x= keras.layers.GlobalAveragePooling2D()(base_model.output)
+output =keras.layers.Dense(n_classes, activation='softmax')(x)
+model =keras.models.Model(inputs=[base_model.input], outputs=[output])
+
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+model.fit(X_train, y_train, epochs=10, batch_size=64, validation_data=(X_test, y_test), verbose=1)
+
+###Neuer Code-Abschnitt in Google Colab###
+
+model.summary()
+
+###Neuer Code-Abschnitt in Google Colab###
+
+model.evaluate(X_test,y_test)
+
+###Neuer Code-Abschnitt in Google Colab###
+
+model.save("cifar10_resnet34.h5")
