@@ -34,7 +34,7 @@ from skimage.segmentation import slic
 from skimage.color import rgb2lab
 
 
-X= X_test.astype(np.float32)
+X= x_test.astype(np.float32)
 y= y_test.flatten()
 
 class_names= ["airplane", "automobile", "bird","cat", "deer", "dog", "frog","horse", "ship", "truck"]
